@@ -1,47 +1,36 @@
-local StarterGui = game:GetService("StarterGui")
-local Players = game:GetService("Players")
-local LocalPlayer = Players.LocalPlayer
+-- Esse script tenta zerar os valores de tempo locais assim que você entra
+-- Ele simula que você está 30 horas (108.000 segundos) no futuro
 
-local function notificar(titulo, texto)
-    StarterGui:SetCore("SendNotification", {
-        Title = titulo,
-        Text = texto,
-        Duration = 5
-    })
-end
+local tempoAdiantado = 30 * 3600 -- 30 horas em segundos
+local player = game.Players.LocalPlayer
 
-local tempoAdiantado = 30 * 3600 
+print("Tentando burlar CDP ao entrar...")
 
-notificar("🟡 PEDRINHUU CDP", "Ativando Sistema...")
-
-task.wait(math.random(3, 5))
-
-local burlado = false
-
-for _, obj in pairs(LocalPlayer:GetDescendants()) do
-    if obj:IsA("NumberValue") or obj:IsA("IntValue") then
-        if obj.Value > 0 then
-            obj.Value = math.max(0, obj.Value - tempoAdiantado)
-            burlado = true
+-- Função para procurar e "limpar" os valores de Cooldown
+local function limparCooldowns()
+    -- Procura em pastas comuns de dados do jogador
+    local alvos = {player:FindFirstChild("Data"), player:FindFirstChild("leaderstats"), player:FindFirstChild("Cooldowns")}
+    
+    for _, pasta in pairs(alvos) do
+        if pasta then
+            for _, valor in pairs(pasta:GetChildren()) do
+                if valor:IsA("NumberValue") or valor:IsA("IntValue") then
+                    -- Subtrai o tempo ou zera o valor
+                    valor.Value = 0 
+                    print("Zerei o valor de: " .. valor.Name)
+                end
+            end
         end
     end
 end
 
-local atributos = LocalPlayer:GetAttributes()
-for nome, valor in pairs(atributos) do
-    if type(valor) == "number" and valor > 0 then
-        LocalPlayer:SetAttribute(nome, math.max(0, valor - tempoAdiantado))
-        burlado = true
-    end
-end
+-- Executa imediatamente
+limparCooldowns()
 
-if burlado then
-    notificar("🟢 PEDRINHUU CDP", "Sistema Ativado!")
-    notificar("🟠 PEDRINHUU CDP", "Retirando sua CDP...")
-    
-    task.wait(math.random(3, 6))
-    
-    notificar("🟢 PEDRINHUU CDP", "Você esta sem CDP agora!!")
-else
-    notificar("🔴 PEDRINHUU CDP", "Você não possui CDP ou ela ja foi burlada!")
-end
+-- Se o kick for baseado em uma UI (tela) que aparece, tentamos deletar a tela de kick
+player.PlayerGui.ChildAdded:Connect(function(child)
+    if child.Name:lower():find("kick") or child.Name:lower():find("aviso") then
+        child:Destroy()
+        print("Tentei deletar a interface de Kick!")
+    end
+end)
