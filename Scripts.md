@@ -1,64 +1,47 @@
-local sg = game:GetService("StarterGui")
-local lp = game.Players.LocalPlayer
+local StarterGui = game:GetService("StarterGui")
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
 
--- Função de notificação (Visual que você pediu)
-local function notify(title, text, color)
-    sg:SetCore("SendNotification", {
-        Title = title,
-        Text = text,
-        Duration = 5,
-        -- Ícone opcional, se quiser pode remover
+local function notificar(titulo, texto)
+    StarterGui:SetCore("SendNotification", {
+        Title = titulo,
+        Text = texto,
+        Duration = 5
     })
 end
 
--- Essa função varre o jogador inteiro procurando qualquer número > 0
-local function nuclearSweep()
-    local foundSomething = false
-    
-    -- 1. Varredura de Objetos (NumberValue, IntValue)
-    -- GetDescendants pega TUDO: filhos, netos, bisnetos...
-    for _, obj in pairs(lp:GetDescendants()) do
-        if obj:IsA("NumberValue") or obj:IsA("IntValue") or obj:IsA("DoubleConstrainedValue") then
-            if obj.Value > 0 then
-                -- Filtro de segurança: ignora configurações gráficas ou de câmera comuns
-                if not obj.Name:lower():find("camera") and not obj.Name:lower():find("sensitivity") then
-                    obj.Value = 0
-                    foundSomething = true
-                end
-            end
+local tempoAdiantado = 30 * 3600 
+
+notificar("🟡 PEDRINHUU CDP", "Ativando Sistema...")
+
+task.wait(math.random(3, 5))
+
+local burlado = false
+
+for _, obj in pairs(LocalPlayer:GetDescendants()) do
+    if obj:IsA("NumberValue") or obj:IsA("IntValue") then
+        if obj.Value > 0 then
+            obj.Value = math.max(0, obj.Value - tempoAdiantado)
+            burlado = true
         end
     end
-    
-    -- 2. Varredura de Atributos (Sistema novo do Roblox)
-    local attributes = lp:GetAttributes()
-    for name, value in pairs(attributes) do
-        if type(value) == "number" and value > 0 then
-            lp:SetAttribute(name, 0)
-            foundSomething = true
-        end
-    end
-    
-    return foundSomething
 end
 
+local atributos = LocalPlayer:GetAttributes()
+for nome, valor in pairs(atributos) do
+    if type(valor) == "number" and valor > 0 then
+        LocalPlayer:SetAttribute(nome, math.max(0, valor - tempoAdiantado))
+        burlado = true
+    end
+end
 
--- EXECUÇÃO DO SISTEMA
-notify("🟡 PEDRINHUU CDP", "Iniciando varredura profunda...", "")
-
-task.wait(math.random(2, 4)) -- Pequeno delay para "simular" processamento
-
--- Tenta limpar
-local sucesso = nuclearSweep()
-
-if sucesso then
-    notify("🟢 PEDRINHUU CDP", "Valores encontrados e zerados!")
-    notify("🟠 PEDRINHUU CDP", "Finalizando processo...")
+if burlado then
+    notificar("🟢 PEDRINHUU CDP", "Sistema Ativado!")
+    notificar("🟠 PEDRINHUU CDP", "Retirando sua CDP...")
     
-    task.wait(2)
+    task.wait(math.random(3, 6))
     
-    notify("🟢 PEDRINHUU CDP", "Você esta sem CDP agora!!")
+    notificar("🟢 PEDRINHUU CDP", "Você esta sem CDP agora!!")
 else
-    -- Se mesmo varrendo tudo não achou, então o sistema é 100% Server-Side
-    -- Ou a variável está dentro de um script privado (inacessível)
-    notify("🔴 PEDRINHUU CDP", "Nenhuma CDP detectada na memória do cliente!") 
+    notificar("🔴 PEDRINHUU CDP", "Você não possui CDP ou ela ja foi burlada!")
 end
